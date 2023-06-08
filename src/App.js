@@ -1,13 +1,58 @@
 import React, { useState } from "react";
 
-export default function Board() {
+export default function Game() {
+  //* State
+  
+  const [history, setHistory] = useState([Array(9).fill(null)]);
+  //Manejador de posicion del usuario en el historial
+  const [currentMove, setCurrentMove] = useState(0);
+  //Total de cuadros
+  const currentSquares = history[currentMove];
+  const xIsNext = currentMove % 2 === 0;
+
+  //* Functions
+  function handlePlay(nextSquares) {
+    const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
+    setHistory(nextHistory);
+    setCurrentMove(nextHistory.length - 1);
+  }
+
+  function jumpTo(nextMove) {
+    setCurrentMove(nextMove);
+    // console.log(xIsNext);
+  }
+
+  const moves = history.map((squares, move) => {
+    let description;
+    if (move > 0) {
+      description = 'Ir al movimiento #' + move;
+    } else {
+      description = 'Ir al inicio del juego';
+    }
+    return (
+      <li key={move}>
+        <button onClick={() => jumpTo(move)}>{description}</button>
+      </li>
+    );
+  });
+
+  //*HTML
+  return (
+    <div className="game">
+      <div className="game-board">
+        <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay} />
+      </div>
+      <div className="game-info">
+        <ol>{moves}</ol>
+      </div>
+    </div>
+  );
+}
+
+function Board( { xIsNext, squares, onPlay } ) {
 
   //*Status
-  //state para manejar quien es el siguiente jugador (True: X, False: O)
-  const [xIsNext, setXIsNext] = useState(true);
 
-  //State para manejar el estado del tablero
-  const [squares, setSquares] = useState(Array(9).fill(null));
 
   //*Functions
   //Manejador del click en el cuadrado
@@ -31,8 +76,7 @@ export default function Board() {
       squareClicked[position] = "O";
     }
     
-    setSquares( squareClicked );
-    setXIsNext( !xIsNext );
+    onPlay( squareClicked );
   }
 
   function calculateWinner(squares) {
